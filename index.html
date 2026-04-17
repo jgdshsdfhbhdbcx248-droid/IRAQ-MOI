@@ -6,105 +6,94 @@
     <title>مساعد الروان الذكي</title>
     <style>
         body { margin: 0; background: #0b0e14; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        
-        /* شاشة البداية لتفعيل المايك */
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; cursor: pointer; }
-        
-        #avatar-container { width: 250px; height: 250px; border-radius: 50%; border: 5px solid #00d4ff; box-shadow: 0 0 30px #00d4ff; overflow: hidden; margin-bottom: 30px; position: relative; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; cursor: pointer; }
+        #avatar-container { width: 220px; height: 220px; border-radius: 50%; border: 4px solid #00d4ff; box-shadow: 0 0 20px #00d4ff; overflow: hidden; margin-bottom: 20px; transition: 0.3s; }
         img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* حركات التفاعل الذكية */
-        .listening { border-color: #fbbf24 !important; box-shadow: 0 0 40px #fbbf24 !important; animation: pulse 1.2s infinite; }
-        .talking { border-color: #ff0055 !important; box-shadow: 0 0 40px #ff0055 !important; animation: shake 0.4s infinite; }
-
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        .talking { animation: shake 0.3s infinite; border-color: #ff0055 !important; }
         @keyframes shake { 0% { transform: rotate(1deg); } 50% { transform: rotate(-1deg); } 100% { transform: rotate(1deg); } }
-
-        #status { font-size: 1.5rem; color: #00d4ff; text-align: center; font-weight: bold; padding: 0 20px; }
-        #sub-status { font-size: 1rem; color: #aaa; margin-top: 10px; }
+        #status { font-size: 1.4rem; color: #00d4ff; text-align: center; font-weight: bold; min-height: 40px; }
     </style>
 </head>
 <body>
 
     <div id="overlay" onclick="initAssistant()">
-        <h1>اضغط هنا للبدء</h1>
-        <p>لتفعيل المساعد الصوتي التلقائي</p>
+        <h1>يا الله.. اضغط للبدء</h1>
+        <p>المساعد الصوتي لشركة الروان</p>
     </div>
 
     <div id="avatar-container" id="avatarBox">
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Ali&backgroundColor=b6e3f4" id="avatarImg">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Ali" id="avatarImg">
     </div>
 
-    <div id="status">بانتظارك.. احجي أي شي</div>
-    <div id="sub-status">المايك مفتوح دائماً</div>
+    <div id="status">بانتظارك علي..</div>
 
     <script>
         const statusText = document.getElementById('status');
         const avatarBox = document.getElementById('avatar-container');
         const overlay = document.getElementById('overlay');
 
-        // إعدادات التعرف على الكلام (الميكروفون المستمر)
+        // أضف أكوادك هنا (من الصور اللي دزيتها)
+        const OPENAI_API_KEY = "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"; 
+
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
         recognition.lang = 'ar-SA';
-        recognition.continuous = true; // يبقى يسمع حتى لو سكتت
-        recognition.interimResults = false;
+        recognition.continuous = true;
 
         function initAssistant() {
-            overlay.style.display = 'none'; // إخفاء شاشة البداية
+            overlay.style.display = 'none';
             startListening();
-            speak("أهلاً بك علي، أنا أسمعك الآن. تفضل بسؤالك.");
+            speak("هلا بيك علي، المساعد الذكي لشركة الروان جاهز. شتريد تسجل أو تسأل؟");
         }
 
         function startListening() {
+            try { recognition.start(); } catch (e) {}
+        }
+
+        recognition.onresult = async (event) => {
+            const transcript = event.results[event.results.length - 1][0].transcript;
+            statusText.innerText = "فهمت: " + transcript;
+            await callGPT(transcript);
+        };
+
+        async function callGPT(userText) {
+            recognition.stop();
+            statusText.innerText = "جاري التفكير...";
+
             try {
-                recognition.start();
+                const response = await fetch("https://api.openai.com/v1/chat/completions", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${OPENAI_API_KEY}`
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-4o",
+                        messages: [
+                            {"role": "system", "content": "أنت مساعد شركة الروان لصيانة الموبايلات. صاحب الشركة علي. جاوبه بلهجة عراقية. إذا طلب تسجيل مبالغ، جاوبه بذكاء. أنت تتذكر إنه هو علي."},
+                            {"role": "user", "content": userText}
+                        ]
+                    })
+                });
+
+                const data = await response.json();
+                const aiReply = data.choices[0].message.content;
+                speak(aiReply);
             } catch (e) {
-                console.log("المايك يعمل بالفعل");
+                speak("صار عندي خلل بالاتصال بعقلي الاصطناعي.");
+                startListening();
             }
         }
 
-        recognition.onstart = () => {
-            avatarBox.classList.add('listening');
-            statusText.innerText = "أنا أسمعك الآن..";
-        };
-
-        recognition.onresult = (event) => {
-            const transcript = event.results[event.results.length - 1][0].transcript;
-            avatarBox.classList.remove('listening');
-            processAI(transcript);
-        };
-
-        recognition.onend = () => {
-            // إعادة تشغيل المايك تلقائياً إذا انغلق
-            startListening();
-        };
-
-        function processAI(userSpeech) {
-            statusText.innerText = "فهمت إنك قلت: " + userSpeech;
-            
-            // هنا المساعد يجاوبك (يمكن ربطه بـ Gemini لاحقاً)
-            const reply = "تم الحفظ يا غالي، أنت قلت: " + userSpeech;
-            speak(reply);
-        }
-
         function speak(text) {
-            // إيقاف المايك مؤقتاً أثناء حديث المساعد حتى لا يسمع نفسه
-            recognition.stop();
-            
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ar-SA';
-            
-            utterance.onstart = () => {
-                avatarBox.classList.add('talking');
-            };
-
+            utterance.onstart = () => avatarBox.classList.add('talking');
             utterance.onend = () => {
                 avatarBox.classList.remove('talking');
-                statusText.innerText = "أسمعك مجدداً..";
-                startListening(); // إعادة فتح المايك بعد انتهاء الكلام
+                statusText.innerText = "أسمعك علي..";
+                startListening();
             };
-
             window.speechSynthesis.speak(utterance);
         }
     </script>
