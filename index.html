@@ -5,38 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مساعد الروان الذكي</title>
     <style>
-        body { margin: 0; background: #0b0e14; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-        #avatar-box { width: 200px; height: 200px; border-radius: 50%; border: 4px solid #00d4ff; box-shadow: 0 0 15px #00d4ff; overflow: hidden; margin-bottom: 20px; transition: 0.3s; }
-        #avatar-box.talking { transform: scale(1.1); border-color: #ff0055; box-shadow: 0 0 25px #ff0055; }
-        img { width: 100%; height: 100%; object-fit: cover; }
-        #display { font-size: 1.2rem; color: #00d4ff; text-align: center; padding: 10px; min-height: 40px; }
-        .input-group { display: flex; gap: 10px; width: 90%; max-width: 400px; }
-        input { flex: 1; padding: 12px; border-radius: 20px; border: none; outline: none; }
-        button { padding: 10px 20px; border-radius: 20px; border: none; background: #00d4ff; font-weight: bold; cursor: pointer; }
+        body { margin: 0; background: #0b0e14; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        /* تصميم الأفاتار المتحرك */
+        #avatar-container { position: relative; width: 220px; height: 220px; border-radius: 50%; border: 4px solid #00d4ff; box-shadow: 0 0 20px #00d4ff; overflow: hidden; margin-bottom: 20px; transition: 0.3s; }
+        #avatar-img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* حركة الأفاتار أثناء الكلام */
+        .talking { animation: mouthMove 0.4s infinite alternate, pulse Glow 1.5s infinite; border-color: #ff0055 !important; box-shadow: 0 0 30px #ff0055 !important; }
+        
+        @keyframes mouthMove { from { transform: scale(1); } to { transform: scale(1.08); } }
+        @keyframes pulseGlow { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        #display-text { font-size: 1.2rem; color: #00d4ff; text-align: center; margin-bottom: 20px; min-height: 40px; }
+        .controls { display: flex; gap: 10px; width: 90%; max-width: 400px; }
+        input { flex: 1; padding: 15px; border-radius: 25px; border: none; outline: none; font-size: 1rem; }
+        button { padding: 10px 25px; border-radius: 25px; border: none; background: #00d4ff; color: #0b0e14; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="avatar-box"><img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" id="avatar"></div>
-    <div id="display">هلا بيك علي.. أنا بانتظارك.</div>
-    <div class="input-group">
-        <input type="text" id="userInput" placeholder="سولف وياي...">
-        <button onclick="speak()">إرسال</button>
+
+    <div id="avatar-container">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=b6e3f4" id="avatar-img">
     </div>
+
+    <div id="display-text">هلا بيك علي.. أنا أسمعك.</div>
+
+    <div class="controls">
+        <input type="text" id="userInput" placeholder="سولف وياي...">
+        <button onclick="processAI()">إرسال</button>
+    </div>
+
     <script>
-        function speak() {
-            const input = document.getElementById('userInput').value;
-            const box = document.getElementById('avatar-box');
-            const display = document.getElementById('display');
-            if(!input) return;
-            box.classList.add('talking');
-            display.innerText = "جاي أحفظ بذاكرتي...";
-            const speech = new SpeechSynthesisUtterance("تم يا بطل، سجلت عندي: " + input);
-            speech.lang = 'ar-SA';
+        function processAI() {
+            const text = document.getElementById('userInput').value;
+            const container = document.getElementById('avatar-container');
+            const display = document.getElementById('display-text');
+
+            if (!text) return;
+
+            // بدء الحركة (الأفاتار يبدأ يهتز وينبض)
+            container.classList.add('talking');
+            display.innerText = "جاري المعالجة...";
+
+            // تحويل النص إلى صوت (يحجي)
+            const speech = new SpeechSynthesisUtterance();
+            speech.text = "تم يا بطل، سجلت عندي: " + text;
+            speech.lang = 'ar-SA'; // لغة عربية برنة واضحة
+            speech.rate = 1.0;
+            
+            // إنهاء الحركة عند سكوت الصوت
             speech.onend = () => {
-                box.classList.remove('talking');
-                display.innerText = "تم الحفظ بنجاح!";
+                container.classList.remove('talking');
+                display.innerText = "تم الحفظ بذاكرتي!";
                 document.getElementById('userInput').value = "";
             };
+
             window.speechSynthesis.speak(speech);
         }
     </script>
