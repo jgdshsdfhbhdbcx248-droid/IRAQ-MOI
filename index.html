@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مساعد شركة الروان الذكي</title>
+    <style>
+        body { margin: 0; background: #0f0f0f; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #avatar-container { position: relative; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, #222, #000); border: 4px solid #00ffcc; box-shadow: 0 0 20px #00ffcc; overflow: hidden; margin-bottom: 20px; }
+        #avatar-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.1s; }
+        .speaking { animation: pulse 0.5s infinite; transform: scale(1.05); }
+        @keyframes pulse { 0% { border-color: #00ffcc; } 50% { border-color: #ff0077; box-shadow: 0 0 30px #ff0077; } 100% { border-color: #00ffcc; } }
+        #chat-area { width: 90%; max-width: 400px; text-align: center; }
+        #response { font-size: 1.2rem; margin-bottom: 20px; min-height: 50px; color: #00ffcc; }
+        input { width: 80%; padding: 12px; border-radius: 25px; border: none; outline: none; font-size: 1rem; }
+        button { background: #00ffcc; color: black; border: none; padding: 12px 20px; border-radius: 25px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div id="avatar-container">
+        <img id="avatar-img" src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=b6e3f4" alt="Avatar">
+    </div>
+
+    <div id="chat-area">
+        <p id="response">هلا بيك علي.. أنا مساعد شركة الروان، شتريد نسجل اليوم؟</p>
+        <input type="text" id="userInput" placeholder="احجي وياي هنا...">
+        <button onclick="askAI()">إرسال</button>
+    </div>
+
+    <script>
+        function askAI() {
+            const text = document.getElementById('userInput').value;
+            const responsePara = document.getElementById('response');
+            const avatar = document.getElementById('avatar-img');
+
+            if (!text) return;
+
+            // تحريك الافتار (Lip Sync محاكي)
+            avatar.parentElement.classList.add('speaking');
+            responsePara.innerText = "جاي أفكر...";
+
+            // خزن الكلام بالذاكرة المحلية للمتصفح
+            localStorage.setItem('last_action', text);
+
+            // استخدام خدمة النطق في المتصفح
+            const utterance = new SpeechSynthesisUtterance("تم يا غالي، حفظت بذاكرتي: " + text);
+            utterance.lang = 'ar-SA';
+            
+            utterance.onend = () => {
+                avatar.parentElement.classList.remove('speaking');
+                responsePara.innerText = "تم الحفظ: " + text;
+                document.getElementById('userInput').value = "";
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
+</html>
