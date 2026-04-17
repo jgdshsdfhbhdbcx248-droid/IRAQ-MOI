@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مساعد الروان الذكي</title>
+    <title>مساعد استاذ علي</title>
     <style>
         body { margin: 0; background: #0b0e14; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; cursor: pointer; }
@@ -18,14 +18,14 @@
 
     <div id="overlay" onclick="initAssistant()">
         <h1>يا الله.. اضغط للبدء</h1>
-        <p>المساعد الصوتي لشركة الروان</p>
+        <p>المساعد الصوتي استاذ علي</p>
     </div>
 
     <div id="avatar-container" id="avatarBox">
         <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Ali" id="avatarImg">
     </div>
 
-    <div id="status">بانتظارك علي..</div>
+    <div id="status">بانتظارك يا علي..</div>
 
     <script>
         const statusText = document.getElementById('status');
@@ -43,7 +43,7 @@
         function initAssistant() {
             overlay.style.display = 'none';
             startListening();
-            speak("هلا بيك علي، المساعد الذكي لشركة الروان جاهز. شتريد تسجل أو تسأل؟");
+            speak("هلا بيك علي، المساعد الذكي لاستاذ علي جاهز. شتريد تسجل أو تسأل؟");
         }
 
         function startListening() {
