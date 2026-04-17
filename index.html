@@ -3,65 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مساعد الروان الذكي</title>
+    <title>مساعد الروان الصوتي</title>
     <style>
         body { margin: 0; background: #0b0e14; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
         
-        /* تصميم الأفاتار المتحرك */
-        #avatar-container { position: relative; width: 220px; height: 220px; border-radius: 50%; border: 4px solid #00d4ff; box-shadow: 0 0 20px #00d4ff; overflow: hidden; margin-bottom: 20px; transition: 0.3s; }
-        #avatar-img { width: 100%; height: 100%; object-fit: cover; }
+        /* الأفاتار المتحرك */
+        #avatar-container { width: 220px; height: 220px; border-radius: 50%; border: 4px solid #00d4ff; box-shadow: 0 0 20px #00d4ff; overflow: hidden; margin-bottom: 30px; }
+        img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* حركة الأفاتار أثناء الكلام */
-        .talking { animation: mouthMove 0.4s infinite alternate, pulse Glow 1.5s infinite; border-color: #ff0055 !important; box-shadow: 0 0 30px #ff0055 !important; }
-        
-        @keyframes mouthMove { from { transform: scale(1); } to { transform: scale(1.08); } }
-        @keyframes pulseGlow { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        /* حركات التفاعل */
+        .listening { border-color: #fbbf24 !important; box-shadow: 0 0 30px #fbbf24 !important; animation: pulse 1s infinite; }
+        .talking { border-color: #ff0055 !important; box-shadow: 0 0 30px #ff0055 !important; animation: shake 0.3s infinite; }
 
-        #display-text { font-size: 1.2rem; color: #00d4ff; text-align: center; margin-bottom: 20px; min-height: 40px; }
-        .controls { display: flex; gap: 10px; width: 90%; max-width: 400px; }
-        input { flex: 1; padding: 15px; border-radius: 25px; border: none; outline: none; font-size: 1rem; }
-        button { padding: 10px 25px; border-radius: 25px; border: none; background: #00d4ff; color: #0b0e14; font-weight: bold; cursor: pointer; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0% { transform: translate(1px, 1px); } 50% { transform: translate(-1px, -1px); } 100% { transform: translate(1px, 1px); } }
+
+        #status { font-size: 1.4rem; color: #00d4ff; margin-bottom: 20px; text-align: center; font-weight: bold; }
+        #mic-btn { width: 80px; height: 80px; border-radius: 50%; border: none; background: #00d4ff; color: #0b0e14; font-size: 2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px rgba(0,212,255,0.4); }
     </style>
 </head>
 <body>
 
     <div id="avatar-container">
-        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix&backgroundColor=b6e3f4" id="avatar-img">
+        <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Ali&backgroundColor=b6e3f4" id="avatarImg">
     </div>
 
-    <div id="display-text">هلا بيك علي.. أنا أسمعك.</div>
+    <div id="status">اضغط على المايك واحجي..</div>
 
-    <div class="controls">
-        <input type="text" id="userInput" placeholder="سولف وياي...">
-        <button onclick="processAI()">إرسال</button>
-    </div>
+    <button id="mic-btn" onclick="startListening()">🎤</button>
 
     <script>
-        function processAI() {
-            const text = document.getElementById('userInput').value;
-            const container = document.getElementById('avatar-container');
-            const display = document.getElementById('display-text');
+        const statusText = document.getElementById('status');
+        const avatar = document.getElementById('avatar-container');
 
-            if (!text) return;
+        // إعدادات التعرف على الصوت
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'ar-SA';
 
-            // بدء الحركة (الأفاتار يبدأ يهتز وينبض)
-            container.classList.add('talking');
-            display.innerText = "جاري المعالجة...";
+        function startListening() {
+            recognition.start();
+            avatar.classList.add('listening');
+            statusText.innerText = "جاي أسمعك.. سولف..";
+        }
 
-            // تحويل النص إلى صوت (يحجي)
-            const speech = new SpeechSynthesisUtterance();
-            speech.text = "تم يا بطل، سجلت عندي: " + text;
-            speech.lang = 'ar-SA'; // لغة عربية برنة واضحة
-            speech.rate = 1.0;
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            avatar.classList.remove('listening');
+            processResponse(transcript);
+        };
+
+        function processResponse(userText) {
+            statusText.innerText = "جاي أفكر..";
             
-            // إنهاء الحركة عند سكوت الصوت
-            speech.onend = () => {
-                container.classList.remove('talking');
-                display.innerText = "تم الحفظ بذاكرتي!";
-                document.getElementById('userInput').value = "";
+            // هنا المساعد يجاوبك (رد افتراضي)
+            const replyText = "تم يا علي، سجلت بذاكرتي: " + userText;
+            
+            speak(replyText);
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ar-SA';
+            
+            utterance.onstart = () => {
+                avatar.classList.add('talking');
+                statusText.innerText = "جاي أجاوبك..";
             };
 
-            window.speechSynthesis.speak(speech);
+            utterance.onend = () => {
+                avatar.classList.remove('talking');
+                statusText.innerText = "اضغط للبدء مرة ثانية";
+            };
+
+            window.speechSynthesis.speak(utterance);
         }
     </script>
 </body>
